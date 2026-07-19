@@ -15,56 +15,56 @@ import java.util.Date
 import java.util.Locale
 
 class ViewerHistoryAdapter(context: Context, private var items: List<ViewerHistoryEntry>) :
-    // Wrap in ArrayList: Kotlin's emptyList() is immutable, and ArrayAdapter's
-    // clear() calls .clear() on whatever list is passed in — using it directly
-    // here would crash the first time the list is refreshed from empty.
-    ArrayAdapter<ViewerHistoryEntry>(context, R.layout.item_history, ArrayList(items)) {
+ArrayAdapter<ViewerHistoryEntry>(context, R.layout.item_history, ArrayList(items)) {
 
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
+private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
 
-    fun updateItems(newItems: List<ViewerHistoryEntry>) {
-        items = newItems
-        clear()
-        addAll(newItems)
-        notifyDataSetChanged()
-    }
+fun updateItems(newItems: List<ViewerHistoryEntry>) {
+items = newItems
+clear()
+addAll(newItems)
+notifyDataSetChanged()
+}
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val view = convertView ?: LayoutInflater.from(context)
-            .inflate(R.layout.item_history, parent, false)
+override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+val view = convertView ?: LayoutInflater.from(context)
+.inflate(R.layout.item_history, parent, false)
 
-        val entry = items[position]
+val entry = items[position]
 
-        val timestampView = view.findViewById<TextView>(R.id.itemTimestamp)
-        timestampView.text = dateFormat.format(Date(entry.timestamp))
+val timestampView = view.findViewById<TextView>(R.id.itemTimestamp)
+timestampView.text = dateFormat.format(Date(entry.timestamp))
 
-        view.findViewById<TextView>(R.id.itemText).text = entry.rawText
+view.findViewById<TextView>(R.id.itemText).text = entry.rawText
 
-        val container = view.findViewById<View>(R.id.itemContainer)
-        if (entry.isAlert) {
-            container.setBackgroundResource(R.drawable.bg_history_item_alert)
-            timestampView.setTextColor(ContextCompat.getColor(context, R.color.color_alert))
-        } else {
-            container.setBackgroundResource(R.drawable.bg_history_item)
-            timestampView.setTextColor(ContextCompat.getColor(context, R.color.color_text_secondary))
-        }
+val container = view.findViewById<View>(R.id.itemContainer)
+if (entry.isAlert) {
+container.setBackgroundResource(R.drawable.bg_history_item_alert)
+timestampView.setTextColor(ContextCompat.getColor(context, R.color.color_alert))
+} else {
+container.setBackgroundResource(R.drawable.bg_history_item)
+timestampView.setTextColor(ContextCompat.getColor(context, R.color.color_text_secondary))
+}
 
-        val mapButton = view.findViewById<Button>(R.id.itemMapButton)
-        if (entry.latitude != null && entry.longitude != null) {
-            mapButton.visibility = View.VISIBLE
-            mapButton.setOnClickListener {
-                val uri = Uri.parse(
-                    "geo:${entry.latitude},${entry.longitude}?q=${entry.latitude},${entry.longitude}"
-                )
-                val intent = Intent(Intent.ACTION_VIEW, uri)
-                if (intent.resolveActivity(context.packageManager) != null) {
-                    context.startActivity(intent)
-                }
-            }
-        } else {
-            mapButton.visibility = View.GONE
-        }
+val mapButton = view.findViewById<Button>(R.id.itemMapButton)
+if (entry.latitude != null && entry.longitude != null) {
+mapButton.visibility = View.VISIBLE
+mapButton.setOnClickListener {
 
-        return view
-    }
+val uri = Uri.parse("geo:0,0?q={entry.longitude}(Tracker Location)")
+val intent = Intent(Intent.ACTION_VIEW, uri)
+
+// 🔧 اصلاح اصلی — بدون این نقشه باز نمی‌شود
+intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+if (intent.resolveActivity(context.packageManager) != null) {
+context.startActivity(intent)
+}
+}
+} else {
+mapButton.visibility = View.GONE
+}
+
+return view
+}
 }
